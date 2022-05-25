@@ -254,11 +254,13 @@ public class Cafe {
             System.out.println("---------");
             System.out.println("1. Create user");
             System.out.println("2. Log in");
+            System.out.println("3. Bypass login (for lazy developers!");
             System.out.println("9. < EXIT");
             String authorisedUser = null;
             switch (readChoice()){
                case 1: CreateUser(esql); break;
                case 2: authorisedUser = LogIn(esql); break;
+               case 3: authorisedUser = "admin"; break;
                case 9: keepon = false; break;
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
@@ -274,7 +276,7 @@ public class Cafe {
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
-                   case 1: Menu(esql); break;
+                   case 1: Menu(esql, authorisedUser); break;
                    case 2: UpdateProfile(esql); break;
                    case 3: PlaceOrder(esql); break;
                    case 4: UpdateOrder(esql); break;
@@ -318,7 +320,7 @@ public class Cafe {
          System.out.print("Please make your choice: ");
          try { // read the integer, parse it and break.
             input = Integer.parseInt(in.readLine());
-            break;
+	    break;
          }catch (Exception e) {
             System.out.println("Your input is invalid!");
             continue;
@@ -376,9 +378,143 @@ public class Cafe {
 
 // Rest of the functions definition go in here
 
-  public static void Menu(Cafe esql){}
+   public static void Menu(Cafe esql, String user){
+      try{
+          //print menu
+	  Menu_PrintFullMenu(esql);
 
-  public static void UpdateProfile(Cafe esql){}
+ 	  //check user type
+ 	  String userType = null;
+ 	  String query = String.format("SELECT type FROM Users WHERE login='%s'", user);
+ 	  List<List<String>> result = esql.executeQueryAndReturnResult(query);
+ 	  userType = result.get(0).get(0);
+
+          boolean keepon = true;
+	  while(keepon){
+	     //Check what the user wants to do next
+	     if(userType.equals("Customer")){
+	        System.out.println("1. View menu");
+		System.out.println("2. Search for an item");
+	        System.out.println("3. Search for a type of item");
+		System.out.println("9. Go to main menu");
+	        switch (readChoice()){
+                   case 1: Menu_PrintFullMenu(esql); break;
+		   case 2: Menu_SearchItemName(esql); break;
+                   case 3: Menu_SearchItemType(esql); break;
+                   case 9: System.out.println("\n"); return;
+                   default : System.out.println("Unrecognized choice!"); break;
+                }
+             }
+             if(userType.equals("Manager")){
+                System.out.println("1. View menu");
+                System.out.println("2. Search for an item");
+                System.out.println("3. Search for a type of item");
+                System.out.println("4. Add/delete/modify item");
+                System.out.println("9. Go to main menu");
+                switch (readChoice()){
+                   case 1: Menu_PrintFullMenu(esql); break;
+                   case 2: Menu_SearchItemName(esql); break;
+                   case 3: Menu_SearchItemType(esql); break;
+                   case 4: Menu_AddDeleteModifyItem(esql); break;
+                   case 9: System.out.println("\n"); return;
+                   default : System.out.println("Unrecognized choice!"); break;
+                }
+             }
+
+         }
+
+
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+         return;
+      }
+   }
+
+
+   public static void Menu_PrintFullMenu(Cafe esql){
+      try{
+          System.out.println(
+          "\n\n*******************************************************\n" +
+          "                        Menu                               \n" +
+          "***********************************************************\n");
+          //print out the menu
+             String query = "SELECT * FROM MENU";
+                int success = esql.executeQueryAndPrintResult(query);
+          System.out.println("***********************************************************\n");
+
+
+
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+      }
+
+  }
+
+   public static void Menu_SearchItemName(Cafe esql){
+      try{
+         System.out.print("\tItem: ");
+         String itemName = in.readLine();
+         String query = String.format("SELECT * FROM Menu WHERE itemName='%s'", itemName);
+         System.out.println("***********************************************************\n");
+         int rows = esql.executeQueryAndPrintResult(query);
+         System.out.println("***********************************************************\n");
+         if(rows == 0){
+	    System.out.format("No item named %s\n", itemName);
+         }
+      System.out.println("\n");
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+         return;
+      }
+   }
+
+   public static void Menu_SearchItemType(Cafe esql){
+      try{
+         System.out.print("\tType: ");
+         String type = in.readLine();
+         String query = String.format("SELECT * FROM Menu WHERE type='%s'", type);
+         System.out.println("***********************************************************\n");
+         int rows = esql.executeQueryAndPrintResult(query);
+         System.out.println("***********************************************************\n");
+         if(rows == 0){
+            System.out.format("No items of type: %s\n", type);
+         }
+         System.out.println("\n");
+
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+      }
+
+  }
+   public static void Menu_AddDeleteModifyItem(Cafe esql){
+      try{
+         System.out.println("1. Add item");
+         System.out.println("2. Delete item");
+         System.out.println("3. Modify item");
+         System.out.println("9. Go to main menu");
+         switch (readChoice()){
+            case 1: 
+            case 2: System.out.println("\tItem to remove: ");
+                    String itemName = in.readLine();
+                    String query = String.format("DELETE FROM Menu WHERE itemName='%s'", itemName);
+                    esql.executeUpdate(query);
+                    break;
+            case 3: Menu_SearchItemType(esql); break;
+            case 9: System.out.println("\n"); return;
+            default : System.out.println("Unrecognized choice!"); break;
+         }
+
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+      }
+   }  
+   public static void UpdateProfile(Cafe esql){
+      try{
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+      }
+
+   }
 
   public static void PlaceOrder(Cafe esql){}
 
