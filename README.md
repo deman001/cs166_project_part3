@@ -23,6 +23,8 @@ vim java/src/Cafe.java
 
 
 
+### Link to project report:
+https://docs.google.com/document/d/1aAUJ2mOJTR30KvO_vwhtC1DQEuvZsoLg-j2Cci6cVbo/edit?usp=sharing
 
 
 
