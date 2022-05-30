@@ -7,7 +7,7 @@ modify this file to put the absolute paths according to your local computer.
 
 ### Start and initialize the database
 source ./sql/scripts/startPostgreSQL.sh  
-pg_ctl status (This should say "server is running". If it doesn't, then there was a problem with the previous line)
+pg_ctl status (This should say "server is running". If it doesn't, then there was a problem with the previous line)  
 source ./sql/scripts/create_and_initialize_db.sh  
 
 ### Run the Java interface
