@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -107,6 +108,7 @@ public class Cafe {
       ResultSetMetaData rsmd = rs.getMetaData ();
       int numCol = rsmd.getColumnCount ();
       int rowCount = 0;
+
 
       // iterates through the result set and output them to standard out.
       boolean outputHeader = true;
@@ -414,7 +416,6 @@ public class Cafe {
                 switch (readChoice()){
                    case 1: Menu_PrintFullMenu(esql); break;
                    case 2: Menu_SearchItemName(esql); break;
-                   case 3: Menu_SearchItemType(esql); break;
                    case 4: Menu_AddDeleteModifyItem(esql); break;
                    case 9: System.out.println("\n"); return;
                    default : System.out.println("Unrecognized choice!"); break;
@@ -518,11 +519,27 @@ public class Cafe {
 
   public static void PlaceOrder(Cafe esql){
      try{
-	int input = 1;
-	while(input == 1) {
-	   System.out.println("Please type what item you would like:");
-	   	   
+	String query = String.format("SELECT * FROM Orders O");
+	int row = esql.executeQuery(query);
+	System.out.println("Enter the customer login:");
+	String login = in.readLine();
+	System.out.println("Enter pay status(1 for paid, 0 for unpaid)");
+	boolean paid = false;
+	switch (readChoice()) {
+	   case 0: paid = false;
+		   break;
+	   case 1: paid = true;
+		   break;
+	   default: System.out.println("Invalid input!");
+		   break;
 	}
+	Timestamp ts = new Timestamp(System.currentTimeMillis());
+	System.out.println("Enter total");
+	String price = in.readLine();
+	double total = Double.parseDouble(price);
+	String inp = String.format("INSERT INTO Orders (orderid, login, paid, timeStampRecieved, total) VALUES ('%s','%s','%s','%s','%s')", row + 1, login, paid, ts, total);
+	esql.executeUpdate(inp);
+	System.out.println("Order inputted");
      }catch(Exception e){
 	System.err.println(e.getMessage());
      }
