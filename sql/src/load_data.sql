@@ -19,19 +19,19 @@ WITH DELIMITER ';';
 
 
 COPY MENU
-FROM 'YOUR PATH HERE/data/menu.csv'
+FROM '/extra/deman001/P3/cs166_databases_project/data/menu.csv'
 WITH DELIMITER ';';
 
 COPY USERS
-FROM 'YOUR PATH HERE/data/users.csv'
+FROM '/extra/deman001/P3/cs166_databases_project/data/users.csv'
 WITH DELIMITER ';';
 
 COPY ORDERS
-FROM 'YOUR PATH HERE/data/orders.csv'
+FROM '/extra/deman001/P3/cs166_databases_project/data/orders.csv'
 WITH DELIMITER ';';
 ALTER SEQUENCE orders_orderid_seq RESTART 87257;
 
 COPY ITEMSTATUS
-FROM 'YOUR PATH HERE/data/itemStatus.csv'
+FROM '/extra/deman001/P3/cs166_databases_project/data/itemStatus.csv'
 WITH DELIMITER ';';
 

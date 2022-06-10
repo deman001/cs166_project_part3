@@ -12,16 +12,12 @@ DROP TABLE setsType;
 DROP TABLE orderHistory;
 DROP TABLE views;
 
-DROP TYPE UserType;
-
-CREATE TYPE UserType AS ENUM('Manager', 'Employee', 'User');
-
 CREATE TABLE Users(
 	login char(50) UNIQUE NOT NULL, 
 	phoneNum char(16) UNIQUE, 
 	password char(50) NOT NULL,
 	favItems char(400),
-	type UserType NOT NULL,
+	type char(8) NOT NULL,
 	PRIMARY KEY(login));
 
 CREATE TABLE Menu(

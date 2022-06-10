@@ -516,7 +516,17 @@ public class Cafe {
 
    }
 
-  public static void PlaceOrder(Cafe esql){}
+  public static void PlaceOrder(Cafe esql){
+     try{
+	int input = 1;
+	while(input == 1) {
+	   System.out.println("Please type what item you would like:");
+	   	   
+	}
+     }catch(Exception e){
+	System.err.println(e.getMessage());
+     }
+  }
 
   public static void UpdateOrder(Cafe esql){}
 
