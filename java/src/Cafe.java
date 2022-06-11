@@ -187,6 +187,7 @@ public class Cafe {
        while (rs.next()){
           rowCount++;
        }//end while
+
        stmt.close ();
        return rowCount;
    }
@@ -523,6 +524,12 @@ public class Cafe {
 	int row = esql.executeQuery(query);
 	System.out.println("Enter the customer login:");
 	String login = in.readLine();
+	String query1 = String.format("SELECT * FROM Users U WHERE U.login = '%s'",login);
+	int row1 = esql.executeQuery(query1);
+	if (row1 == 0) {
+	   System.out.println("Non existent login!\n");
+	   return;
+	}
 	System.out.println("Enter pay status(1 for paid, 0 for unpaid)");
 	boolean paid = false;
 	switch (readChoice()) {
@@ -536,16 +543,71 @@ public class Cafe {
 	Timestamp ts = new Timestamp(System.currentTimeMillis());
 	System.out.println("Enter total");
 	String price = in.readLine();
-	double total = Double.parseDouble(price);
-	String inp = String.format("INSERT INTO Orders (orderid, login, paid, timeStampRecieved, total) VALUES ('%s','%s','%s','%s','%s')", row + 1, login, paid, ts, total);
+	String inp = String.format("INSERT INTO Orders (orderid, login, paid, timeStampRecieved, total) VALUES (%d,'%s','%s','%s',%s)", row + 1, login, paid, ts, price);
 	esql.executeUpdate(inp);
-	System.out.println("Order inputted");
+	System.out.println("Order inputted\n\n");
      }catch(Exception e){
 	System.err.println(e.getMessage());
      }
   }
 
-  public static void UpdateOrder(Cafe esql){}
+  public static void UpdateOrder(Cafe esql){
+     try{
+	System.out.println("Input the order ID to update");
+	String order = in.readLine();
+	int id = Integer.parseInt(order);
+	String findOrder = String.format("SELECT * FROM Orders O");
+	int row = esql.executeQuery(findOrder);
+	if (id > row || id < 1) {
+	   System.out.println("Invalid order ID!\n\n");
+	   return;
+	}
+	System.out.println("Select what you would like to update");
+	System.out.println("1. Paid or not");
+	System.out.println("2. Total");
+	switch(readChoice()) {
+	   case 1: updatePaid(esql, order);
+		   break;
+	   case 2: updateTotal(esql, order);
+		   break;
+	   default: System.out.println("Invalid input!\n\n");
+		   break;
+	}
+     }catch(Exception e){
+	System.err.println(e.getMessage());
+     }
+  }
+
+
+ public static void updatePaid(Cafe esql, String id) {
+    try{
+	System.out.println("Please input 1 for paid or 2 for unpaid");
+	switch(readChoice()) {
+	   case 1: String query = String.format("UPDATE Orders SET paid = 'true' WHERE orderid = %s", id);
+		   esql.executeUpdate(query);
+		   System.out.printf("Order %s has been updated to be paid\n\n", id);
+		   break;
+	   case 2: String query1 = String.format("UPDATE Orders SET paid = 'false' WHERE orderid = %s", id);
+		   esql.executeUpdate(query1);
+		   System.out.printf("Order %s has been updated to be unpaid\n\n", id);
+		   break;
+	   default: System.out.println("Invalid option\n\n");
+		   break;
+	}
+   }catch(Exception e){
+	System.err.println(e.getMessage());
+   }
+ }
+
+ public static void updateTotal(Cafe esql, String id){
+    try{
+	System.out.println("Input the updated total");
+	String price = in.readLine();
+	String query = String.format("UPDATE Orders SET total = %s WHERE orderid = %s", price, id);
+	System.out.printf("Order %s updated successfully\n\n", id);
+    }catch(Exception e) {
+    }
+ }
 
 }//end Cafe
 
