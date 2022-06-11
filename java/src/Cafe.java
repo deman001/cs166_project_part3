@@ -263,7 +263,7 @@ public class Cafe {
             switch (readChoice()){
                case 1: CreateUser(esql); break;
                case 2: authorisedUser = LogIn(esql); break;
-               case 3: authorisedUser = "admin"; break;
+               case 3: authorisedUser = "Admin"; break;
                case 9: keepon = false; break;
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
@@ -282,7 +282,7 @@ public class Cafe {
                    case 1: Menu(esql, authorisedUser); break;
                    case 2: UpdateProfile(esql); break;
                    case 3: PlaceOrder(esql); break;
-                   case 4: UpdateOrder(esql); break;
+                   case 4: UpdateOrder(esql, authorisedUser); break;
                    case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
                 }
@@ -347,7 +347,7 @@ public class Cafe {
 	    String type="Customer";
 	    String favItems="";
 
-				 String query = String.format("INSERT INTO USERS (phoneNum, login, password, favItems, type) VALUES ('%s','%s','%s','%s','%s')", phone, login, password, favItems, type);
+	String query = String.format("INSERT INTO USERS (phoneNum, login, password, favItems, type) VALUES ('%s','%s','%s','%s','%s')", phone, login, password, favItems, type);
 
          esql.executeUpdate(query);
          System.out.println ("User successfully created!");
@@ -523,12 +523,27 @@ public class Cafe {
 	String query = String.format("SELECT * FROM Orders O");
 	int row = esql.executeQuery(query);
 	System.out.println("Enter the customer login:");
-	String login = in.readLine();
-	String query1 = String.format("SELECT * FROM Users U WHERE U.login = '%s'",login);
+	String login1 = in.readLine();
+	String query1 = String.format("SELECT * FROM Users U WHERE U.login = '%s'",login1);
 	int row1 = esql.executeQuery(query1);
 	if (row1 == 0) {
 	   System.out.println("Non existent login!\n");
 	   return;
+	}
+	System.out.println("Browse order history of user? (Last 5 purchases)");
+	System.out.println("1:Yes");
+	System.out.println("2:No");
+	switch(readChoice()) {
+	   case 1: String qq = String.format("SELECT * FROM Orders WHERE login = '%s' ORDER BY timeStampRecieved LIMIT 5", login1);
+		   int Hist = esql.executeQueryAndPrintResult(qq);
+		   System.out.println("Abort Order?(1:Yes)");
+		   switch(readChoice()) {
+			case 1:return;
+			default:break;
+		   }
+		   break;
+	   case 2: break;
+	   default: break;
 	}
 	System.out.println("Enter pay status(1 for paid, 0 for unpaid)");
 	boolean paid = false;
@@ -543,7 +558,7 @@ public class Cafe {
 	Timestamp ts = new Timestamp(System.currentTimeMillis());
 	System.out.println("Enter total");
 	String price = in.readLine();
-	String inp = String.format("INSERT INTO Orders (orderid, login, paid, timeStampRecieved, total) VALUES (%d,'%s','%s','%s',%s)", row + 1, login, paid, ts, price);
+	String inp = String.format("INSERT INTO Orders (orderid, login, paid, timeStampRecieved, total) VALUES (%d,'%s','%s','%s',%s)", row + 1, login1, paid, ts, price);
 	esql.executeUpdate(inp);
 	System.out.println("Order inputted\n\n");
      }catch(Exception e){
@@ -551,8 +566,21 @@ public class Cafe {
      }
   }
 
-  public static void UpdateOrder(Cafe esql){
+  public static void UpdateOrder(Cafe esql, String user){
      try{
+	String userType = null;
+	String q = String.format("SELECT type FROM Users WHERE login = '%s'", user);
+	List<List<String>> result = esql.executeQueryAndReturnResult(q);
+	userType = result.get(0).get(0);
+	if(!userType.equals("Customer")){
+	   System.out.println("Output all unpaid orders from <= 24 hours?");
+	   System.out.println("1:Yes");
+	   switch(readChoice()) {
+		case 1: orderHist(esql);
+			break;
+		default:break;
+	   }
+	}
 	System.out.println("Input the order ID to update");
 	String order = in.readLine();
 	int id = Integer.parseInt(order);
@@ -562,22 +590,39 @@ public class Cafe {
 	   System.out.println("Invalid order ID!\n\n");
 	   return;
 	}
-	System.out.println("Select what you would like to update");
-	System.out.println("1. Paid or not");
-	System.out.println("2. Total");
-	switch(readChoice()) {
-	   case 1: updatePaid(esql, order);
-		   break;
-	   case 2: updateTotal(esql, order);
-		   break;
-	   default: System.out.println("Invalid input!\n\n");
-		   break;
+	if (userType.equals("Customer")) {
+	   updatePaidCustomer(esql, order);
+	}
+	else {
+	   
+	   updatePaid(esql, order);
 	}
      }catch(Exception e){
 	System.err.println(e.getMessage());
      }
   }
 
+ public static void updatePaidCustomer(Cafe esql, String id) {
+    try{
+	String q = String.format("SELECT O.paid FROM Orders O WHERE O.orderid = '%s'",id);
+	List<List<String>> p = esql.executeQueryAndReturnResult(q);
+	char c = p.get(0).get(0).charAt(0);
+	if (c == 't') {
+	   System.out.println("Cannot modify this order!");
+	   return;
+	}
+	System.out.println("Modify Paid? (1 if yes)");
+	switch(readChoice()) {
+	   case 1: String query = String.format("UPDATE Orders SET paid = 'true' WHERE orderid = %s", id);
+		   esql.executeUpdate(query);
+		   System.out.printf("Order %s has been updated to be paid\n\n", id);
+		   break;
+	   default: break;
+	}
+    }catch(Exception e) {
+	System.err.println(e.getMessage());
+    }
+ }
 
  public static void updatePaid(Cafe esql, String id) {
     try{
@@ -599,15 +644,14 @@ public class Cafe {
    }
  }
 
- public static void updateTotal(Cafe esql, String id){
+ public static void orderHist(Cafe esql) {
     try{
-	System.out.println("Input the updated total");
-	String price = in.readLine();
-	String query = String.format("UPDATE Orders SET total = %s WHERE orderid = %s", price, id);
-	System.out.printf("Order %s updated successfully\n\n", id);
+	Timestamp ts = new Timestamp(System.currentTimeMillis());
+	String query = String.format("SELECT * FROM Orders WHERE timeStampRecieved >= NOW() - '1 day'::INTERVAL");
+	int rows = esql.executeQueryAndPrintResult(query);
     }catch(Exception e) {
+	System.err.println(e.getMessage());
     }
  }
-
 }//end Cafe
 
